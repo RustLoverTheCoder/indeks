@@ -12,6 +12,8 @@ services:
       - "80:80"
       - "443:443"
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    networks:
+      - yunque
   certbot:
     image: certbot/certbot
     restart: unless-stopped
@@ -19,3 +21,19 @@ services:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - yunque
+  micro:
+    image: micro/micro
+    container_name: micro
+    command: server
+    ports:
+      - "8080-8081:8080-8081/tcp"
+      - "2111-2115:2111-2115/tcp"
+    environment:
+      - MICRO_LOG_LEVEL=debug
+    networks:
+      - yunque
+networks:
+  yunque:
+    external: true
